@@ -2,7 +2,7 @@ ARG NODE_VERSION=16
 ARG SERVER_PORT=3001
 
 FROM node:$NODE_VERSION-buster as base
-
+RUN npm i -g yarn --force
 WORKDIR /app
 
 FROM base as builder
@@ -12,7 +12,7 @@ RUN yarn install --frozen-lockfile
 
 COPY . .
 
-RUN yarn lerna bootstrap
+RUN npx lerna bootstrap
 RUN rm -rf /app/packages/server/dist/ && yarn build --scope=server
 
 
@@ -21,7 +21,7 @@ WORKDIR /app
 
 COPY --from=builder /app/packages/server/dist/ /app/
 COPY --from=builder /app/packages/server/package.json /app/package.json
-RUN yarn install --production=true
+RUN yarn --prod
 
 EXPOSE $SERVER_PORT
 CMD [ "node", "/app/index.js" ]
